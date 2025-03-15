@@ -13,7 +13,7 @@ void setup() {
   firebase_init();
   finger_init();
   rfid_init();
-  // oled_init();
+  oled_init();
 }
 
 #define SYSTEM_STATE_NORMAL   0
