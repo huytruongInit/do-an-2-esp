@@ -5,3 +5,7 @@
 #define DATABASE_URL "https://digit-door-lock-default-rtdb.firebaseio.com"  // Insert RTDB URLefine the RTDB URL */
 
 #endif
+
+/**
+ * File này chưa fix được không upload lên git 
+*/
