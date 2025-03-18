@@ -9,7 +9,7 @@
  *  MISO:   19
  *  IRQ:    NC 
  *  GND:    GND
- *  RST:    21
+ *  RST:    17
  *  VCC:    3.3V
 */
 
@@ -18,14 +18,13 @@
 #include <MFRC522DriverPinSimple.h>
 #include <MFRC522Debug.h>
 
-MFRC522DriverPinSimple ss_pin(5);
-MFRC522DriverSPI driver{ss_pin}; // Create SPI driver
-MFRC522 mfrc522{driver};         // Create MFRC522 instance
+#define RST_PIN 17
+#define SS_PIN  5
 
-void rfid_init(void) {
-    mfrc522.PCD_Init();    // Init MFRC522 board.
-    MFRC522Debug::PCD_DumpVersionToSerial(mfrc522, Serial);	// Show details of PCD - MFRC522 Card Reader details.
-    Serial.println("RFID đã kết nối thành công"); // CẦN FIX LẠI CHỔ NÀY
-}
+static MFRC522DriverPinSimple ss_pin(SS_PIN);
+static MFRC522DriverSPI driver{ss_pin}; // Create SPI driver
+static MFRC522 mfrc522{driver};         // Create MFRC522 instance
+
+void rfid_init(void);
 
 #endif
