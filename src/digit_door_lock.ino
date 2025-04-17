@@ -1,99 +1,138 @@
-#include <secret.h>
+#include "esp_log.h"
+#include <my_system.h>
 #include <input_output.h>
 #include <my_fingerprint.h>
 #include <my_wifi.h>
 #include <my_firebase.h>
-#include <my_oled.h>
 #include <my_rfid.h>
+#include <my_oled.h>
+#include <network_time.h>
 
-// ĐỊNH NGHĨA CÁC BIẾN THỜI GIAN NON-BLOCKING
-#define ONE_SECOND 1000     // 1000ms ~ 1s
-long long last_time = 0;    // ...
-uint16_t  count_time = 0;   // ...
+// TAG sử dụng khi debug hệ thống 
+static const char *TAG = "SYSTEM";
 
-// ĐỊNH NGHĨA CÁC TRẠNG THÁI CỦA HỆ THỐNG
-typedef enum {
-  NORMAL    = 0,    // bình thường, luôn chờ đọc vân tay
-  REGISTER  = 1,    // thêm vân tay (thêm người vào nhà)
-} SystemState;
-SystemState system_state = NORMAL;
 
-// KHAI BÁO CÁC HÀM CỦA HỆ THỐNG
-void system_run(void);        
-uint8_t readnumber(void);
+uint8_t registerID = 0;       // chứa id sẽ đăng ký
+uint8_t fingerID   = 0;       // chứa fingerID đọc được
+String  fingerTemplate = "";  // the real template
 
 void setup() {
-  Serial.begin(57600);
-
-  // network init
-  wifi_init();
-  firebase_init();
-
-  // peripheral & sensor init
-  io_init();
-  fingerInit();
-  fingerQtyTemplate();  // in ra số lượng template vân tay mà cảm biến đang lưu trữ
-  rfid_init();
-  // oled_init();
-
-  
+  // khởi tạo hệ thống
+  system_init();
 }
 
 void loop() {
-  // Non-blocking
-  if(millis() - last_time >= 2000) {
-    system_run();
-
-    count_time++;
-    if(count_time > 5) {
-      system_state = REGISTER;
-    }
-
+  if(millis() - last_time > ONE_SECOND) {
+    system_process();
     last_time = millis();
   }
 }
 
-uint8_t readnumber(void) {
-  uint8_t num = 0;
+void system_init(void) {
+  Serial.begin(57600);
+  oledInit();
 
-  while (num == 0) {
-    while (! Serial.available());
-    num = Serial.parseInt();
-  }
-  return num;
+  // wifi init
+  oledWiFiStart();
+  wifi_init();
+  oledWiFiConnected();
+  // hết wifi init
+
+  // network time init
+  networkTimeInit();
+
+  // Init firebase
+  firebaseInit(); 
+
+  // peripheral & sensor init
+  gpioInit();
+  fingerInit();
+
+  // print quantity fingerprint
+  fingerQtyTemplate();
 }
 
-// ĐỊNH NGHĨA HÀM CỦA HỆ THỐNG
-void system_run(void) {
+void system_process(void) {
+  // Debug Log hiển thị trạng thái hiện tại của hệ thống
+  ESP_LOGD(TAG, "%s",system_name[system_state].c_str());
+
+  // Timestamp của NTP
+  // int timestamp = getTime();
+  // ESP_LOGD(TAG, "Timestamp %d", timestamp);
+
+  // process
   switch(system_state) {
-    case NORMAL:
-      Serial.println("Trạng thái hệ thống: Bình thường");
-      // ... chờ đọc vân tay || ... chờ đọc rfid
+    // Trạng thái bình thường (chờ đọc vân tay / rfid / tín hiệu điều khiển)
+    case IDLE:
+      system_idle();
       break;
-
-
+    
+    // Trạng thái THÊM NGƯỜI DÙNG MỚI
     case REGISTER:
-      Serial.println("Trạng thái hệ thống: Thêm vân tay");
-      uint8_t id =readnumber();       // Tạo ID (Giả lập, ID sau này sẽ gửi từ web xuống luôn)
-
-      uint8_t p = fingerEnroll(id);   // đăng ký vân tay mới
-      if(p != FINGERPRINT_OK) Serial.println("Đăng ký vân tay thất bại");
-      fingerDownloadTemplate(id);     // Lấy template vân tay
-      
-      // Lấy template gửi lên firebase
-
-      // rfidEnroll     // đăng ký rfid luôn
-      // Lấy Template gửi lên firebase
-
-      // Nếu enroll thành công thì lấy template của finger gửi lên web
-      // ...
+      system_register();
       break;
 
+    default:
+      break;
+  } 
+}
 
-    // default: 
-    //   break;  
-    // ...
-
+void system_idle(void) {
+  // Nếu có tín hiệu THÊM NGƯỜI DÙNG MỚI thì sẽ chuyển sang trạng thái đăng ký
+  // PATH: /Store/$uid/register/nextFingerID
+  if(fbGetSignalAddUser(&registerID)) {
+    system_state = REGISTER;
   }
 
+
+  // Đọc xem có vân tay nào quét không
+  if(getFingerprintID(&fingerID) == FINGERPRINT_OK) {
+    // Nếu đọc vân tay thành công
+
+    // Mở cửa
+    solenoidEnable(HIGH);
+
+    // Đọc tín hiệu phản hồi
+
+    /*  Tạo path, ví dụ fingerID = 7
+        path: /isOpen/finger7
+    */
+    String pathSub = "/isOpen/fingerID-";
+    pathSub.concat(fingerID);
+
+    // Gửi lên firebase thông báo mở cửa - true sau này sẽ thay bằng tín hiệu mở cửa thành công hay thất bại
+    fbSendBoolean("Store/", pathSub, true);
+  }
+}
+
+void system_register(void) {
+  // Đăng ký vân tay
+  uint8_t finger_status = fingerEnroll(registerID);
+
+  // chờ 50ms
+  delay(500);  
+
+  // Nếu đăng ký vân tay thành công
+  if(finger_status == FINGERPRINT_OK) {
+    // gửi tín hiệu đăng ký thành công lên firebase (dạng chuỗi)
+    // PATH: /Store/$uid/template/fingerID
+    fbSendtring("Store/", "/template/fingerID", String(registerID));
+  }
+  
+  // Chờ thủ tục đăng ký hoàn tất
+  while(fbGetSignalAddUser(&registerID)) {
+    // Hiển thị processbar - hoàn thành 95%
+    oledProcessBar(95, 10, 20, 10);
+    oledText("Wating ...", 50, 50);
+    delay(100);
+  }
+
+  // Hiển thị đã hoàn tất đăng ký
+  oledClearAll();
+  oledProcessBar(100, 10, 20, 10);
+  oledText("Success", 50, 50);
+
+  // Hoàn thành quá trình đăng ký
+  // Quay về trạng thái IDLE chờ quét vân tay / rfid để mở cửa
+  system_state = IDLE;
 }

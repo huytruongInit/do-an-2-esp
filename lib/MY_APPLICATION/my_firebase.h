@@ -2,19 +2,33 @@
 #define MY_FIREBASE
 
 #include <secret.h>
-
-// Thư viện kết nối firebase
 #include <Firebase_ESP_Client.h>
-#include "addons/TokenHelper.h" //Provide the token generation process info.
-#include "addons/RTDBHelper.h"  //Provide the RTDB payload printing info and other helper functions.
+#include <ArduinoJson.h>
 
-FirebaseData fbdo;  // Define Firebase Data object
-FirebaseAuth auth;
-FirebaseConfig config;
 
-void firebase_init(void) {
-    config.api_key = API_KEY; /* Assign the api key (required) */
-    config.database_url = DATABASE_URL; /* Assign the RTDB URL (required) */
-}
+#define USER_EMAIL "giangtruong1007@gmail.com"
+#define USER_PASSWORD "giangtruong1007"
+
+#define API_KEY "AIzaSyB_scuWAgYKmoBqG_33oBAWrLLSHp9sVq0"    // Insert Firebase project API Key
+#define DATABASE_URL "https://digit-door-lock-default-rtdb.firebaseio.com/"  // Insert RTDB URLefine the RTDB URL */
+
+// Define Firebase Data object
+static FirebaseData fbdo;       
+static FirebaseAuth auth;
+static FirebaseConfig config;
+static FirebaseJson json;   
+static String uid;  // UID: 8pN513xWDacJtxHqzaIYJLpWrRp2
+
+// fb: firebase
+
+void firebaseInit(void);                                    // Khởi tạo kết nối firebase
+
+// GET 
+bool fbGetSignalAddUser(uint8_t *registerId);      // Đọc xem có tín hiệu đăng ký không
+
+// SEND
+void fbSendtring(String pathMain,String pathRef, String content);      // Gửi chuỗi lên firebase
+void fbSendBoolean(String pathMain, String pathRef, bool state);
 
 #endif
+

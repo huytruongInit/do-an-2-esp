@@ -13,14 +13,15 @@
  *  VCC:    3.3V
 */
 
+#define RST_PIN 4  // DESIGN PCB LÀ 4
+
 #include <MFRC522v2.h>
 #include <MFRC522DriverSPI.h>
 #include <MFRC522DriverPinSimple.h>
 #include <MFRC522Debug.h>
 
-#define RST_PIN 17
-#define SS_PIN  5
 
+#define SS_PIN  5
 static MFRC522DriverPinSimple ss_pin(SS_PIN);
 static MFRC522DriverSPI driver{ss_pin}; // Create SPI driver
 static MFRC522 mfrc522{driver};         // Create MFRC522 instance
