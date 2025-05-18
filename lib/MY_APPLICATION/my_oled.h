@@ -44,6 +44,8 @@ void oledFingerScan(int16_t x, int16_t y);
 // Display process bar
 void oledProcessBar(int8_t progress, int8_t x, int8_t y, int8_t height);
 
+// Display time
+void oledClockCircle(void);
 
 // Display clear 
 void oledClearAll(void);

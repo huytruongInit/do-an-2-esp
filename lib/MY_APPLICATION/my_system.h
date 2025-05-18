@@ -4,7 +4,7 @@
 #include <Arduino.h>
 
 // ĐỊNH NGHĨA CÁC BIẾN THỜI GIAN NON-BLOCKING
-#define ONE_SECOND 1000     // 1000ms ~ 1s
+#define ONE_SECOND 500     // 1000ms ~ 1s
 long long last_time = 0;    // ...
 
 

@@ -2,8 +2,11 @@
 
 const char* ntpServer = "pool.ntp.org";
 
+int timezone = 7 * 3600;
+int dst = 0;
+
 void networkTimeInit(void) {
-    configTime(0, 0, ntpServer);
+    configTime(timezone , dst, ntpServer);
 }
 
 // Function that gets current epoch time

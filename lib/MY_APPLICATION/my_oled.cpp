@@ -100,6 +100,40 @@ void oledProcessBar(int8_t progress, int8_t x, int8_t y, int8_t height) {
   display.setCursor(SCREEN_WIDTH / 2 - (String(progress).length() * 6), y + height + 5); // Ước tính chiều rộng chữ
   display.print(progress);
   display.print("%");
+  display.display();
+
+}
+
+// 
+void oledClockCircle(void) {
+  // get local time
+  struct tm timeinfo;
+  getLocalTime(&timeinfo);
+
+
+  display.clearDisplay();
+
+  display.setTextSize(1);             // Normal 1:1 pixel scale
+  display.setTextColor(1);            // Draw white text
+  display.setCursor(40, 5);             // Start at top-left corner
+  String timedays = "Saturday";
+  display.print(F(timedays.c_str()));
+
+  display.setTextSize(3);             // Normal 1:1 pixel scale
+  display.setTextColor(1);            // Draw white text
+  display.setCursor(20, 30);             // Start at top-left corner
+
+  String hours = String(timeinfo.tm_hour);
+  String mins = String(timeinfo.tm_min);
+  // String secs = String(timeinfo.tm_sec);
+
+  // String timehms = "21:19:30";
+  if( mins.length() < 2) 
+    mins = "0" + mins;
+
+  String timehms = hours + ":" + mins;
+
+  display.print(F(timehms.c_str()));
 
   display.display();
 

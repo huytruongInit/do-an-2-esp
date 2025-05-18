@@ -29,6 +29,6 @@ bool fbGetSignalAddUser(uint8_t *registerId);      // Đọc xem có tín hiệu
 // SEND
 void fbSendtring(String pathMain,String pathRef, String content);      // Gửi chuỗi lên firebase
 void fbSendBoolean(String pathMain, String pathRef, bool state);
-
+void fbSendInt(String pathMain,String pathRef, int value);  
 #endif
 

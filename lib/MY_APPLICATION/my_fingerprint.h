@@ -13,6 +13,7 @@
 #include <Adafruit_Fingerprint.h>
 #include <HardwareSerial.h>
 #include <my_oled.h>
+#include <input_output.h>
 
 // Uart0
 // static HardwareSerial mySerial(0); // sử dụng uart0 (hardware)

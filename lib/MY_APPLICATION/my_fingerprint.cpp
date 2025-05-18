@@ -43,6 +43,7 @@ uint8_t fingerEnroll(uint8_t id) {
     if(p != FINGERPRINT_OK)     return p;   // convert ảnh thất bại
 
     // Đọc vân tay lần 1 thành công, thả vân tay ra 
+    ledGreenEnable(HIGH);
     oledFingerValid(70, 0);
     oledText("Scan success", 0, 0);
     oledText("Remove finger", 0, 15);
@@ -52,6 +53,7 @@ uint8_t fingerEnroll(uint8_t id) {
     delay(2000);
 
     // Hiển thị oled quét vân tay lần 2
+    ledGreenEnable(LOW);
     oledFingerScan(60, 5);
     oledText("2nd Scan Finger", 0, 0);
 

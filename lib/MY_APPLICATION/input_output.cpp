@@ -13,10 +13,15 @@ void gpioInit(void) {
     pinMode(OUTPUT_BUZZER, OUTPUT);
     pinMode(OUPUT_SOLENOID, OUTPUT);
 
-    // ledRedEnable(HIGH);     // bật led đỏ
-    // ledGreenEnable(LOW);    // tắt led xanh
-    // buzzerEnable(LOW);      // tắt còi
-    // solenoidEnable(LOW);    // tắt 
+    tone(OUTPUT_BUZZER, 2700);
+    delay(1000);
+    noTone(OUTPUT_BUZZER); // Dừng phát âm thanh
+
+    ledRedEnable(HIGH);   
+    ledGreenEnable(HIGH);   
+    // solenoidEnable(HIGH);
+
+
     
     ESP_LOGD(TAG, "Connection success");
 }
@@ -36,4 +41,12 @@ void buzzerEnable(bool sta) {
 void solenoidEnable(bool sta) {
     digitalWrite(OUPUT_SOLENOID, sta);
     ESP_LOGD(TAG, "OPEN DOOR");
+}
+
+bool solenoidRead(void) {
+    return digitalRead(INPUT_SOLENOID);
+}
+
+bool btnRead(uint8_t pin) {
+    return digitalRead(pin);
 }

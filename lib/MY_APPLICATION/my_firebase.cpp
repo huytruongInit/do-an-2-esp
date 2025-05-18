@@ -73,12 +73,23 @@ void fbSendtring(String pathMain, String pathRef, String content) {
 }
 
 void fbSendBoolean(String pathMain, String pathRef, bool state) {
-    // Path 
-    String path = pathMain;
-    path.concat(uid);
-    path.concat(pathRef);
-  
-    // ESP_LOGD(TAG, "%s", path.c_str());
-  
-    Firebase.RTDB.setBool(&fbdo, path.c_str(), state);
+  // Path 
+  String path = pathMain;
+  path.concat(uid);
+  path.concat(pathRef);
+
+  // ESP_LOGD(TAG, "%s", path.c_str());
+
+  Firebase.RTDB.setBool(&fbdo, path.c_str(), state);
 }
+
+void fbSendInt(String pathMain,String pathRef, int value) {
+  // Path 
+  String path = pathMain;
+  path.concat(uid);
+  path.concat(pathRef);
+
+  // ESP_LOGD(TAG, "%s", path.c_str());
+
+  Firebase.RTDB.setInt(&fbdo, path.c_str(), value);
+} 
